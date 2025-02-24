@@ -9,7 +9,10 @@ let paddle1Y = canvas.height / 2 - PADDLE_HEIGHT / 2;
 let paddle2Y = canvas.height / 2 - PADDLE_HEIGHT / 2;
 let paddle1Speed = 0, paddle2Speed = 0;
 
+let score1 = 0, score2 = 0; // Punteggio iniziale
+
 const PADDLE_SPEED = 6;
+const WINNING_SCORE = 7; // Punteggio per vincere
 
 // Disegna la pallina
 function drawBall() {
@@ -38,6 +41,18 @@ function drawCenterLine() {
     ctx.closePath();
 }
 
+// Disegna le porte
+function drawGoals() {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, canvas.height / 2 - 50, 10, 100); // Porta sinistra
+    ctx.fillRect(canvas.width - 10, canvas.height / 2 - 50, 10, 100); // Porta destra
+}
+
+// Disegna il punteggio
+function drawScore() {
+    document.getElementById("score").textContent = `Giocatore 1: ${score1} | Giocatore 2: ${score2}`;
+}
+
 // Movimento della pallina
 function moveBall() {
     ballX += ballSpeedX;
@@ -47,8 +62,16 @@ function moveBall() {
         ballSpeedY = -ballSpeedY;
     }
 
-    if (ballX + BALL_RADIUS > canvas.width || ballX - BALL_RADIUS < 0) {
-        ballSpeedX = -ballSpeedX;
+    // Gol a sinistra
+    if (ballX - BALL_RADIUS < 0) {
+        score2++;
+        resetBall();
+    }
+
+    // Gol a destra
+    if (ballX + BALL_RADIUS > canvas.width) {
+        score1++;
+        resetBall();
     }
 
     // Collisione con le mazzette
@@ -68,6 +91,27 @@ function movePaddles() {
     // Limitare il movimento delle mazzette
     paddle1Y = Math.max(0, Math.min(canvas.height - PADDLE_HEIGHT, paddle1Y));
     paddle2Y = Math.max(0, Math.min(canvas.height - PADDLE_HEIGHT, paddle2Y));
+}
+
+// Reset della pallina dopo un gol
+function resetBall() {
+    ballX = canvas.width / 2;
+    ballY = canvas.height / 2;
+    ballSpeedX = -ballSpeedX;
+
+    // Verifica se un giocatore ha vinto
+    if (score1 >= WINNING_SCORE || score2 >= WINNING_SCORE) {
+        if (score1 >= WINNING_SCORE) {
+            alert("Giocatore 1 ha vinto!");
+        } else {
+            alert("Giocatore 2 ha vinto!");
+        }
+
+        // Reset del punteggio e della partita
+        score1 = 0;
+        score2 = 0;
+        resetBall();
+    }
 }
 
 // Controlli da tastiera
@@ -99,6 +143,8 @@ function draw() {
     drawBall();
     drawPaddles();
     drawCenterLine();
+    drawGoals();
+    drawScore();
     moveBall();
     movePaddles();
     requestAnimationFrame(draw);
